@@ -1,10 +1,10 @@
 package ch.hepia
-package component
+package numeric
 
 
 case class Matrix private(private val dvs: Transposed*) {
   import scala.collection.mutable
-  private[component] val vectors: mutable.ListBuffer[Transposed] = mutable.ListBuffer( dvs : _* )
+  private[numeric] val vectors: mutable.ListBuffer[Transposed] = mutable.ListBuffer( dvs : _* )
 
   def nbRows: Int = vectors.length
   def nbCols: Int = if (vectors.isEmpty) 0 else vectors.head.len()
@@ -62,7 +62,7 @@ case class Matrix private(private val dvs: Transposed*) {
     })
   }
   def solveWith(denseVector: DenseVector): DenseVector = {
-    this.inv().mul( component.Matrix(denseVector.t()).t() ).getCol(0)
+    this.inv().mul( numeric.Matrix(denseVector.t()).t() ).getCol(0)
   }
 
   // TODO: Return Option if det = 0
@@ -73,7 +73,7 @@ case class Matrix private(private val dvs: Transposed*) {
     Matrix( vectors.slice(0, row) ++ vectors.slice(row+1, vectors.length): _* )
   }
   def colRemoved(col: Int): Matrix = {
-    component.Matrix( vectors.map(c => c.removed(col).asInstanceOf[Transposed]): _* )
+    numeric.Matrix( vectors.map(c => c.removed(col).asInstanceOf[Transposed]): _* )
   }
   def removed(row: Int, col: Int): Matrix = {
     // Could be (but less efficient:
@@ -90,7 +90,7 @@ case class Matrix private(private val dvs: Transposed*) {
 }
 
 object Matrix {
-  def fill(rows: Int, cols: Int, value: Double): Matrix = component.Matrix( List.fill(rows)( Vector.fill(cols, value).t() ): _* )
+  def fill(rows: Int, cols: Int, value: Double): Matrix = numeric.Matrix( List.fill(rows)( Vector.fill(cols, value).t() ): _* )
   def zeros(rows: Int, cols: Int): Matrix = Matrix.fill(rows, cols, 0.0)
   def ones(rows: Int, cols: Int): Matrix = Matrix.fill(rows, cols, 1.0)
   def tabulate(rows: Int, cols: Int, f: (Int, Int) => Double): Matrix = {

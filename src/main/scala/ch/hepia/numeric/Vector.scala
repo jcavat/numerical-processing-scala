@@ -1,13 +1,13 @@
 package ch.hepia
-package component
+package numeric
 
 trait Vector {
-  def t(): component.Vector
+  def t(): numeric.Vector
   def dot(denseVector: DenseVector): Double
   def len(): Int
   def set(idx: Int, value: Double): Unit
   def get(idx: Int): Double
-  def map(f: Double => Double): component.Vector
+  def map(f: Double => Double): numeric.Vector
   def add(value: Double): Unit
 
   def mul(by: Double): Vector = map( _ * by )
@@ -23,11 +23,11 @@ trait Vector {
   def removed(idx: Int): Vector = sliceTo(idx).concat(sliceFrom(idx+1))
 }
 
-case class DenseVector(private val ds: Double*) extends component.Vector {
+case class DenseVector(private val ds: Double*) extends numeric.Vector {
   import scala.collection.mutable
-  private[component] val doubles: mutable.ListBuffer[Double] = mutable.ListBuffer(ds: _*)
+  private[numeric] val doubles: mutable.ListBuffer[Double] = mutable.ListBuffer(ds: _*)
 
-  override def t(): component.Transposed = Transposed( this )
+  override def t(): numeric.Transposed = Transposed( this )
   override def toString: String = {
     "[" + doubles.map(_.toString).mkString("\n") + "]"
   }
@@ -46,8 +46,8 @@ case class DenseVector(private val ds: Double*) extends component.Vector {
 
 }
 
-case class Transposed(private[component] val v: DenseVector) extends component.Vector {
-  override def t(): component.DenseVector = v
+case class Transposed(private[numeric] val v: DenseVector) extends numeric.Vector {
+  override def t(): numeric.DenseVector = v
   override def toString: String = {
     "[" + v.doubles.map(_.toString).mkString(",") + "]"
   }
@@ -83,7 +83,7 @@ object Vector {
     def to(to: Double) : LineSpaceTo = LineSpaceTo(from, to)
   }
   case class LineSpaceTo(from: Double, to: Double) {
-    def repeat(nb: Int): component.Vector = linspace(from, to, nb)
+    def repeat(nb: Int): numeric.Vector = linspace(from, to, nb)
   }
 
   def fill(nb: Int, value: Double): DenseVector = DenseVector(  List.fill(nb)(value): _* )

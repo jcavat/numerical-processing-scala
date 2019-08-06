@@ -1,7 +1,7 @@
 package ch.hepia
 
-import ch.hepia.component.Matrix
-import ch.hepia.component._
+import ch.hepia.numeric.Matrix
+import ch.hepia.numeric._
 
 
 // TODO: Ecrire identidy with diag
