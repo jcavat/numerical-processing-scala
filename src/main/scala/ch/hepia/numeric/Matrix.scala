@@ -73,7 +73,7 @@ case class Matrix private(private val dvs: Transposed*) {
     Matrix( vectors.slice(0, row) ++ vectors.slice(row+1, vectors.length): _* )
   }
   def colRemoved(col: Int): Matrix = {
-    numeric.Matrix( vectors.map(c => c.removed(col).asInstanceOf[Transposed]): _* )
+    numeric.Matrix( vectors.map(c => c.removed(col)): _* )
   }
   def removed(row: Int, col: Int): Matrix = {
     // Could be (but less efficient:

@@ -1,53 +1,46 @@
 package ch.hepia
 package numeric
 
-trait Vector {
-  def t(): numeric.Vector
-  def dot(denseVector: DenseVector): Double
-  def len(): Int
-  def set(idx: Int, value: Double): Unit
-  def get(idx: Int): Double
-  def map(f: Double => Double): numeric.Vector
-  def add(value: Double): Unit
 
-  def mul(by: Double): Vector = map( _ * by )
-
-  // norm
-  // sum
-
-  def slice(from: Int, to: Int): Vector
-  def sliceFrom(from: Int): Vector = slice(from, len())
-  def sliceTo(to: Int): Vector = slice(0, to)
-
-  def concat(vector: Vector): Vector
-  def removed(idx: Int): Vector = sliceTo(idx).concat(sliceFrom(idx+1))
-}
-
-case class DenseVector(private val ds: Double*) extends numeric.Vector {
+case class DenseVector(private val ds: Double*) {
   import scala.collection.mutable
   private[numeric] val doubles: mutable.ListBuffer[Double] = mutable.ListBuffer(ds: _*)
 
-  override def t(): numeric.Transposed = Transposed( this )
+  def t(): numeric.Transposed = Transposed( this )
   override def toString: String = {
     "[" + doubles.map(_.toString).mkString("\n") + "]"
   }
-  override def dot(denseVector: DenseVector): Double = throw new IllegalArgumentException
-  override def len(): Int = doubles.length
-  override def set(idx: Int, value: Double): Unit = doubles.update(idx, value)
-  override def get(idx: Int): Double = doubles(idx)
-  override def map(f: Double => Double): DenseVector = DenseVector( doubles.map(f): _* )
-  override def add(value: Double): Unit = doubles += value
+  def len(): Int = doubles.length
+  def set(idx: Int, value: Double): Unit = doubles.update(idx, value)
+  def get(idx: Int): Double = doubles(idx)
+  def map(f: Double => Double): DenseVector = DenseVector( doubles.map(f): _* )
+  def add(value: Double): Unit = doubles += value
+  def mul(by: Double): DenseVector = map( _ * by )
+
 
   def slice(from: Int, to: Int): DenseVector = DenseVector( doubles.slice(from, to): _* )
-  def concat(dv: Vector): DenseVector = dv match {
+  def sliceFrom(from: Int): DenseVector = slice(from, len())
+  def sliceTo(to: Int): DenseVector = slice(0, to)
+  def concat(dv: DenseVector): DenseVector = dv match {
     case dv: DenseVector => DenseVector(doubles ++ dv.doubles: _*)
     case _ => throw new IllegalArgumentException
   }
 
+  def removed(idx: Int): DenseVector = sliceTo(idx).concat(sliceFrom(idx+1))
+  def less(that: DenseVector): Boolean = compare(that, _ < _)
+  def lessOrEqual(that: DenseVector): Boolean = compare(that, _ <= _)
+  def compare(that: DenseVector, cmp: (Double, Double) => Boolean): Boolean = {
+    for( i <- 0 until len()) {
+      if(!cmp(this.get(i), that.get(i))) {
+        return false
+      }
+    }
+    true
+  }
 }
 
-case class Transposed(private[numeric] val v: DenseVector) extends numeric.Vector {
-  override def t(): numeric.DenseVector = v
+case class Transposed(private[numeric] val v: DenseVector) {
+  def t(): numeric.DenseVector = v
   override def toString: String = {
     "[" + v.doubles.map(_.toString).mkString(",") + "]"
   }
@@ -57,17 +50,19 @@ case class Transposed(private[numeric] val v: DenseVector) extends numeric.Vecto
     v.doubles.zip(denseVector.doubles).map{ case (d1, d2) => d1*d2}.sum
 
   }
-  override def len(): Int = v.doubles.length
-  override def set(idx: Int, value: Double): Unit = v.set(idx, value)
-  override def get(idx: Int): Double = v.doubles(idx)
-  override def map(f: Double => Double): Transposed = Transposed( v.map(f) )
-  override def add(value: Double): Unit = v.add(value)
+  def len(): Int = v.doubles.length
+  def set(idx: Int, value: Double): Unit = v.set(idx, value)
+  def get(idx: Int): Double = v.doubles(idx)
+  def map(f: Double => Double): Transposed = Transposed( v.map(f) )
+  def add(value: Double): Unit = v.add(value)
 
   def slice(from: Int, to: Int): Transposed = DenseVector( v.doubles.slice(from, to): _* ).t()
-  def concat(dv: Vector): Transposed = dv match {
-    case dv: Transposed => DenseVector(v.doubles ++ dv.v.doubles: _*).t()
-    case _ => throw new IllegalArgumentException
+  def concat(dv: Transposed): Transposed = {
+    DenseVector(v.doubles ++ dv.v.doubles: _*).t()
   }
+  def sliceFrom(from: Int): Transposed = slice(from, len())
+  def sliceTo(to: Int): Transposed = slice(0, to)
+  def removed(idx: Int): Transposed = sliceTo(idx).concat(sliceFrom(idx+1))
 }
 
 object Transposed {
@@ -83,7 +78,7 @@ object Vector {
     def to(to: Double) : LineSpaceTo = LineSpaceTo(from, to)
   }
   case class LineSpaceTo(from: Double, to: Double) {
-    def repeat(nb: Int): numeric.Vector = linspace(from, to, nb)
+    def repeat(nb: Int): numeric.DenseVector = linspace(from, to, nb)
   }
 
   def fill(nb: Int, value: Double): DenseVector = DenseVector(  List.fill(nb)(value): _* )

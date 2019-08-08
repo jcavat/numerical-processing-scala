@@ -1,5 +1,6 @@
 package ch.hepia
 
+import ch.hepia.backpaking.{BackpackingProblem, RandomBackPacking}
 import ch.hepia.numeric.Matrix
 import ch.hepia.numeric._
 
@@ -49,6 +50,20 @@ object Main extends App {
   println()
   println( m8.solveWith( DenseVector(1,1,-1) ) )
 
+  println("...")
+  println( DenseVector(1,2,3).lessOrEqual(DenseVector(1,4,3) ))
+
+  val prob: BackpackingProblem = new RandomBackPacking
+  val objectives = DenseVector(9.0, 5.0, 7.0, 3.0, 1.0)
+
+  prob.addObjective( objectives )
+  prob.addConstraint( DenseVector(4.0, 3.0, 5.0, 2.0, 1.0), 10.0 )
+  prob.addConstraint( DenseVector(4.0, 2.0, 3.0, 2.0, 1.0), 7.0 )
+//  prob.addBound( DenseVector(1.0, 1.0, 1.0, 0.0, 0.0) )
+
+  val sol = prob.solve()
+  println( sol )
+  println( objectives.t().dot(sol) )
 
 
 }
