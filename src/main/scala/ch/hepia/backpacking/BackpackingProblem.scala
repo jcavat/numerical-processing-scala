@@ -1,4 +1,4 @@
-package ch.hepia.backpaking
+package ch.hepia.backpacking
 
 import ch.hepia.numeric.{DenseVector, Matrix, Transposed, Vector}
 

@@ -1,6 +1,8 @@
 package ch.hepia
 package numeric
 
+import scala.util.Try
+
 
 case class DenseVector(private val ds: Double*) {
   import scala.collection.mutable
@@ -8,7 +10,7 @@ case class DenseVector(private val ds: Double*) {
 
   def t(): numeric.Transposed = Transposed( this )
   override def toString: String = {
-    "[" + doubles.map(_.toString).mkString("\n") + "]"
+    "D[" + doubles.map(_.toString).mkString("\n") + "]"
   }
   def len(): Int = doubles.length
   def set(idx: Int, value: Double): Unit = doubles.update(idx, value)
@@ -37,12 +39,18 @@ case class DenseVector(private val ds: Double*) {
     }
     true
   }
+
+  override def equals(obj: Any): Boolean = {
+    Try(obj.asInstanceOf[DenseVector]).toOption.exists( that => that.doubles == this.doubles )
+  }
+
+  override def hashCode(): Int = doubles.hashCode()
 }
 
 case class Transposed(private[numeric] val v: DenseVector) {
   def t(): numeric.DenseVector = v
   override def toString: String = {
-    "[" + v.doubles.map(_.toString).mkString(",") + "]"
+    "T[" + v.doubles.map(_.toString).mkString(",") + "]"
   }
   def dot(denseVector: DenseVector): Double = {
     if( this.len() != denseVector.len() ) throw new IllegalArgumentException
@@ -63,6 +71,12 @@ case class Transposed(private[numeric] val v: DenseVector) {
   def sliceFrom(from: Int): Transposed = slice(from, len())
   def sliceTo(to: Int): Transposed = slice(0, to)
   def removed(idx: Int): Transposed = sliceTo(idx).concat(sliceFrom(idx+1))
+
+  override def equals(obj: Any): Boolean = {
+    Try(obj.asInstanceOf[Transposed]).toOption.exists( that => that.v.doubles == this.v.doubles )
+  }
+
+  override def hashCode(): Int = v.doubles.hashCode()
 }
 
 object Transposed {

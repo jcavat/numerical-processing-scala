@@ -1,6 +1,8 @@
 package ch.hepia
 package numeric
 
+import scala.util.Try
+
 
 case class Matrix private(private val dvs: Transposed*) {
   import scala.collection.mutable
@@ -82,11 +84,16 @@ case class Matrix private(private val dvs: Transposed*) {
     for( i <- 0 until nbRows ) {
       if (i != row){
         val v: Transposed = vectors(i)
-        res.add( vectors(i).removed(col).asInstanceOf[Transposed] )
+        res.add( v.removed(col) )
       }
     }
     res
   }
+  override def equals(obj: Any): Boolean = {
+    Try(obj.asInstanceOf[Matrix]).toOption.exists( that => that.vectors == this.vectors )
+  }
+
+  override def hashCode(): Int = vectors.hashCode()
 }
 
 object Matrix {
